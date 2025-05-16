@@ -72,14 +72,14 @@ router.post('/forgot-password', forgotPasswordLimiter, async (req, res) => {
 
         // Generate a password reset token
         const token = crypto.randomBytes(32).toString('hex');
-        const expiry = Date.now() + 15 * 60 * 1000; // 15 minutes
+        const expiry = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
 
         await pool.query(
-            'UPDATE users SET reset_token = $1, reset_token_expiry = $2 WHERE id = $3',
+            'UPDATE users SET reset_token = $1, reset_token_expiry = $2 WHERE user_id = $3',
             [token, expiry, user.user_id]
         )
 
-        const resetLink = `https://localhost:5173/reset-password?token=${token}`;
+        const resetLink = `https://localhost:3001/reset-password?token=${token}`;
 
         sendResetLink(email, resetLink);
         return res.status(200).json({ message: 'If an account with this email exist, a reset link has been sent.' });

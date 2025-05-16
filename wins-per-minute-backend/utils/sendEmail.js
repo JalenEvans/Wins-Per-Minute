@@ -1,16 +1,24 @@
 import nodemailer from 'nodemailer';
+import dotenv from 'dotenv';
+dotenv.config();
 
 const transporter = nodemailer.createTransport({
-    service: 'gmail',
+    host: 'smtp.gmail.com',
+    port: 587,
+    secure: false,
     auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
+        type: 'OAuth2',
+        user: process.env.EMAIL,
+        clientId: '73439477218-9e6v0eg0i2d3o0ak1m8i2er00gph0rqk.apps.googleusercontent.com',
+        clientSecret: process.env.CLIENT_SECRET,
+        refreshToken: process.env.REFRESH_TOKEN,
+        accessToken: process.env.ACCESS_TOKEN,
     },
 });
 
 export function sendResetLink (email, resetLink) {
     transporter.sendMail({
-        from: '"Wins Per Minute" <winsperminute@gmail.com>',
+        from: `"Wins Per Minute" <${process.env.EMAIL}>`,
         to: email,
         subject: 'Password Reset Link',
         html: `<p>Click here to reset your password: <a href="${resetLink}">${resetLink}</a></p>`,
