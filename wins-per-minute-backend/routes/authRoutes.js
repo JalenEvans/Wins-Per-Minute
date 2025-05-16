@@ -1,7 +1,6 @@
 import express from 'express';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
-import ratelimit from 'express-rate-limit';
 import crypto from 'crypto';
 import { createUser, findUserByEmail } from '../models/userModel.js';
 import { isPasswordValid } from '../utils/validatePassword.js';
@@ -46,7 +45,7 @@ router.post('/login', loginLimiter, async (req, res) => {
 
     try {
         // Check if the email is registered
-        const user = findUserByEmail(email);
+        const user = await findUserByEmail(email);
         if (!user) return res.status(401).json({ error: 'Invalid credentials' });
 
         // Check if the password is correct
@@ -56,7 +55,7 @@ router.post('/login', loginLimiter, async (req, res) => {
         // Generate a JWT token
         const token = jwt.sign({ id: user.user_id }, process.env.JWT_SECRET, { expiresIn: '2h' });
 
-        return res.status(200).json({ user: {id: user.user_id, username: user.username}, token });
+        return res.status(200).json({ user: {user_id: user.user_id, username: user.username}, token });
     }
     catch (error) {
         console.error(error);

@@ -1,3 +1,5 @@
+import ratelimit from 'express-rate-limit';
+
 // Limit up to 3 register attempts to prevent brute-force attacks
 export const registerLimiter = ratelimit({
     windowMs: 30 * 60 * 1000, // 30 minutes
