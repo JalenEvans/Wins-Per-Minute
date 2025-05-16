@@ -1,23 +1,40 @@
+// Dependencies
 import express from 'express';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 import crypto from 'crypto';
+import { body } from 'express-validator';
+
+// Models
 import { createUser, findUserByEmail } from '../models/userModel.js';
+
+// Utils
 import { isPasswordValid } from '../utils/validatePassword.js';
 import { sendResetLink } from '../utils/sendEmail.js';
 import { SALT_ROUNDS } from '../utils/constants.js';
-import { registerLimiter, loginLimiter, forgotPasswordLimiter } from '../utils/rateLimiters.js';
+
+// Middleware
+import { registerLimiter, loginLimiter, forgotPasswordLimiter } from '../middleware/rateLimiters.js';
+import { validateRequest } from '../middleware/errorHandler.js';
+
+// Database
 import pool from '../db/db.js';
 
 const router = express.Router();
 
-router.post('/register', registerLimiter, async (req, res) => {
-    const {username, email, password} = req.body;
+const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,20}$/;
 
-    // Validate password
-    if (!isPasswordValid(password)) {
-        return res.status(400).json({ error: 'Password must be between 8 and 20 characters long, contain at least one uppercase letter, one lowercase letter, one digit 0-9, and one special character.' });
-    }
+router.post('/register', 
+    registerLimiter,
+    [
+        body('username').notEmpty().trim().isLength({ min: 3, max: 20 }).withMessage('Username must be between 3 and 20 characters long'),
+        body('email').isEmail().withMessage('Invalid email format'),
+        body('password').matches(PASSWORD_REGEX).withMessage(
+            'Password must be between 8 and 20 characters long, contain at least one uppercase letter, one lowercase letter, one digit 0-9, and one special character.'),
+    ],
+    validateRequest,
+    async (req, res) => {
+    const {username, email, password} = req.body;
 
     try {
         // Check if the email is already registered
@@ -33,14 +50,19 @@ router.post('/register', registerLimiter, async (req, res) => {
         return res.status(201).json({ user, token });
     }
     catch (error) {
-        console.error(error);
-        return res.status(500).json({ message: 'Internal server error' });
+        next(error);
     }
 })
 
 
 
-router.post('/login', loginLimiter, async (req, res) => {
+router.post('/login', 
+    loginLimiter,
+    [
+        body('email').isEmail().withMessage('Invalid email format'),
+        body('password').notEmpty().withMessage('Password is required'),
+    ], 
+    async (req, res) => {
     const {email, password} = req.body;
 
     try {
@@ -63,7 +85,12 @@ router.post('/login', loginLimiter, async (req, res) => {
     }
 })
 
-router.post('/forgot-password', forgotPasswordLimiter, async (req, res) => {
+router.post('/forgot-password', 
+    forgotPasswordLimiter,
+    [
+        body('email').isEmail().withMessage('Invalid email format'),
+    ], 
+    async (req, res) => {
     const { email } = req.body;
 
     try {
@@ -90,7 +117,12 @@ router.post('/forgot-password', forgotPasswordLimiter, async (req, res) => {
     }
 })
 
-router.post('/reset-password', async (req, res) => {
+router.post('/reset-password',
+    [
+        body('newPassword').matches(PASSWORD_REGEX).withMessage(
+            'Password must be between 8 and 20 characters long, contain at least one uppercase letter, one lowercase letter, one digit 0-9, and one special character.'),
+    ],
+    async (req, res) => {
     const { token, newPassword } = req.body;
 
     try {
@@ -101,11 +133,6 @@ router.post('/reset-password', async (req, res) => {
 
         const user = result.rows[0];
         if (!user) return res.status(400).json({ error: 'Invalid or expired token' });
-
-        // Validate password
-        if (!isPasswordValid(newPassword)) {
-            return res.status(400).json({ error: 'Password must be between 8 and 20 characters long, contain at least one uppercase letter, one lowercase letter, one digit 0-9, and one special character.' });
-        }
 
         const hashedPassword = await bcrypt.hash(newPassword, SALT_ROUNDS);
 
