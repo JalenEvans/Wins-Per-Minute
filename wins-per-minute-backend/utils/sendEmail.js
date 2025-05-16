@@ -10,7 +10,7 @@ const transporter = nodemailer.createTransport({
 
 export function sendResetLink (email, resetLink) {
     transporter.sendMail({
-        from: '"Wins Per Minute" <jalenemmanuelevans@gmail.com>', // TODO: create an email for the app
+        from: '"Wins Per Minute" <winsperminute@gmail.com>',
         to: email,
         subject: 'Password Reset Link',
         html: `<p>Click here to reset your password: <a href="${resetLink}">${resetLink}</a></p>`,
