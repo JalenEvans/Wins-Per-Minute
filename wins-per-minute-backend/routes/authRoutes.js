@@ -19,23 +19,23 @@ router.post('/register', async (req, res) => {
         return res.status(400).json({ error: 'Password must be between 8 and 20 characters long, contain at least one uppercase letter, one lowercase letter, one digit 0-9, and one special character.' });
     }
 
-    findUserByEmail(email)
+    try {
         // Check if the email is already registered
-        .then(user => {
-            if (user) {
-                return res.status(409).json({ error: 'Email already registered' });
-            }
-            // If the email is not registered, create a new user
-            return createUser(username, email, password)
-        })
-        .then(user => {
-            const token = jwt.sign({ id: user.user_id }, process.env.JWT_SECRET, { expiresIn: '1h' });
-            return res.status(201).json({ user, token });
-        })
-        .catch(error => {
-            console.error(error);
-            return res.status(500).json({ message: 'Internal server error' });
-        });
+        const existingUser = await findUserByEmail(email);
+        if (existingUser) return res.status(409).json({ error: 'Email already registered' });
+
+        // If the email is not registered, create a new user
+        const user = await createUser(username, email, password);
+
+        // Generate a JWT token
+        const token = jwt.sign({ id: user.user_id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+
+        return res.status(201).json({ user, token });
+    }
+    catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Internal server error' });
+    }
 })
 
 // Limit up to 5 login attempts to prevent brute-force attacks
@@ -49,30 +49,27 @@ const loginLimiter = ratelimit({
     legacyHeaders: false, // Disable the `X-RateLimit-*` headers
 });
 
-router.post('/login', loginLimiter, (req, res) => {
+router.post('/login', loginLimiter, async (req, res) => {
     const {email, password} = req.body;
-    findUserByEmail(email)
+
+    try {
         // Check if the email is registered
-        .then(user => {
-            // Check if the password is correct
-            return bcrypt.compare(password, user.password_hash)
-                .then(_ => {
-                    const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '2h' });
-                    return res.status(200).json({ user: {id: user.user_id, username: user.username}, token });
-                })
-                .catch(_ => {
-                    return res.status(401).json({ error: 'Invalid credentials' });
-                })
-        })
-        // If the email is not registered, return an error
-        .catch(error => {
-            if (error.message === 'Invalid credentials') {
-                return res.status(401).json({ error: error.message });
-            }
-            else{
-                return res.status(500).json({ error: error.message });
-            }
-        })
+        const user = findUserByEmail(email);
+        if (!user) return res.status(401).json({ error: 'Invalid credentials' });
+
+        // Check if the password is correct
+        const isPasswordValid = await bcrypt.compare(password, user.password_hash);
+        if (!isPasswordValid) return res.status(401).json({ error: 'Invalid credentials' });
+
+        // Generate a JWT token
+        const token = jwt.sign({ id: user.user_id }, process.env.JWT_SECRET, { expiresIn: '2h' });
+
+        return res.status(200).json({ user: {id: user.user_id, username: user.username}, token });
+    }
+    catch (error) {
+        console.error(error);
+        return res.status(500).json({ error: 'Login failed' });
+    }
 })
 
 // TODO: implement rate limiting for forgot password
