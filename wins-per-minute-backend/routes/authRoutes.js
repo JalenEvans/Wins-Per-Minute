@@ -7,11 +7,12 @@ import { createUser, findUserByEmail } from '../models/userModel.js';
 import { isPasswordValid } from '../utils/validatePassword.js';
 import { sendResetLink } from '../utils/sendEmail.js';
 import { SALT_ROUNDS } from '../utils/constants.js';
+import { registerLimiter, loginLimiter, forgotPasswordLimiter } from '../utils/rateLimiters.js';
 import pool from '../db/db.js';
 
 const router = express.Router();
 
-router.post('/register', async (req, res) => {
+router.post('/register', registerLimiter, async (req, res) => {
     const {username, email, password} = req.body;
 
     // Validate password
@@ -38,16 +39,7 @@ router.post('/register', async (req, res) => {
     }
 })
 
-// Limit up to 5 login attempts to prevent brute-force attacks
-const loginLimiter = ratelimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 5, // Limit each IP to 5 requests per windowMs
-    message: {
-        error: 'Too many login attempts from this IP, please try again after 15 minutes',
-    },
-    standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
-    legacyHeaders: false, // Disable the `X-RateLimit-*` headers
-});
+
 
 router.post('/login', loginLimiter, async (req, res) => {
     const {email, password} = req.body;
@@ -72,8 +64,7 @@ router.post('/login', loginLimiter, async (req, res) => {
     }
 })
 
-// TODO: implement rate limiting for forgot password
-router.post('/forgot-password', async (req, res) => {
+router.post('/forgot-password', forgotPasswordLimiter, async (req, res) => {
     const { email } = req.body;
 
     try {
@@ -92,7 +83,7 @@ router.post('/forgot-password', async (req, res) => {
         const resetLink = `https://localhost:5173/reset-password?token=${token}`;
 
         sendResetLink(email, resetLink);
-        return res.status(200).json({ message: 'Password reset link sent to your email' });
+        return res.status(200).json({ message: 'If an account with this email exist, a reset link has been sent.' });
     }
     catch (error) {
         console.error(error);
