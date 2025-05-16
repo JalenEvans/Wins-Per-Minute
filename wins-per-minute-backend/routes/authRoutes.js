@@ -9,7 +9,6 @@ import { body } from 'express-validator';
 import { createUser, findUserByEmail } from '../models/userModel.js';
 
 // Utils
-import { isPasswordValid } from '../utils/validatePassword.js';
 import { sendResetLink } from '../utils/sendEmail.js';
 import { SALT_ROUNDS } from '../utils/constants.js';
 
