@@ -22,6 +22,10 @@ app.use('/api/auth', authRoutes);
 
 app.get('/', (req, res) => res.send('API is running'));
 
+app.get('/health', (req, res) => {
+    res.status(200).send('OK');
+});
+
 app.listen(process.env.PORT, () => {
     console.log(`Server is running on http://localhost:${process.env.PORT}`);
 });
