@@ -19,8 +19,8 @@ jobs:
       with:
           node-version: '22.14.0'
 
-    - name: Install Newman
-      run: npm install -g newman
+    - name: Install Dependenciess
+      run: npm install -g newman express
 
     - name: Run Server
       run: node wins-per-minute-backend/server.js
