@@ -21,7 +21,7 @@ function checkServer() {
 function retry() {
     const elapsedTime = Date.now() - startTime;
     if (elapsedTime > timeout) {
-        console.log('⏳ Server is not ready yet. Retrying...');
+        console.log('⏳ Timed out waiting for server to start.');
         process.exit(1);
     } else {
         setTimeout(checkServer, interval);
