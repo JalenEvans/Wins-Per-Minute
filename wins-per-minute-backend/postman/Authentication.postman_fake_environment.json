@@ -1,10 +1,16 @@
 {
-	"id": "fakeid-1234-5678-9101-112131415161",
+	"id": "b40e3712-d685-4c8c-b65b-b788ea74ed1c",
 	"name": "Authentication",
 	"values": [
 		{
+			"key": "baseUrl",
+			"value": "http://localhost:3001",
+			"type": "default",
+			"enabled": true
+		},
+		{
 			"key": "password",
-			"value": "FakePassword123!",
+			"value": "S$cure123",
 			"type": "default",
 			"enabled": true
 		},

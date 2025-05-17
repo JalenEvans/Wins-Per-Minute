@@ -10,20 +10,58 @@ jobs:
   postman-tests:
     runs-on: ubuntu-latest
 
+    env: 
+      NODE_ENV: ${{ secrets.NODE_ENV }}
+      PORT: ${{ secrets.PORT }}
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      JWT_SECRET: ${{ secrets.JWT_SECRET }}
+      EMAIL: ${{ secrets.EMAIL }}
+      CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
+      REFRESH_TOKEN: ${{ secrets.REFRESH_TOKEN }}
+      ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+
     steps:
-    - name: Checkout Repository
-      uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
-    - name: Install Node.JS
-      uses: actions/setup-node@v3
-      with:
-          node-version: '18'
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'  # or your version
 
-    - name: Install Newman
-      run: npm install -g newman
+      - name: Install dependencies
+        run: npm install
 
-    - name: Run Server
-      run: node wins-per-minute-backend/server.js
+      - name: Install Newman (Postman CLI)
+        run: npm install -g newman
 
-    - name: Run Postman Collection
-      run: newman run wins-per-minute-backend/postman/Authentication.postman_collection.json -e wins-per-minute-backend/postman/Authentication.postman_fake_environment.json
+      - name: Start server in background, run tests, then cleanup
+        run: |
+          # Start server in background and save logs
+          node wins-per-minute-backend/server.js > server.log 2>&1 &
+
+          SERVER_PID=$!
+
+          echo "Server started with PID $SERVER_PID"
+
+          # Wait for server to be ready
+          node wins-per-minute-backend/scripts/wait-for-server.js
+
+          echo "Server is ready, running tests..."
+
+          # Run your Postman tests
+          newman run wins-per-minute-backend/postman/Authentication.postman_collection.json -e wins-per-minute-backend/postman/Authentication.postman_fake_environment.json
+
+          TEST_EXIT_CODE=$?
+
+          # Kill the server
+          kill $SERVER_PID || echo "Server already stopped."
+
+          echo "Server stopped."
+
+          # Output server logs for debugging
+          echo "===== Server Logs Start ====="
+          cat server.log
+          echo "===== Server Logs End ====="
+
+          # Exit with test result code so workflow fails if tests fail
+          exit $TEST_EXIT_CODE

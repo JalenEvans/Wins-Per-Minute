@@ -14,9 +14,11 @@ export function validateRequest(req, res, next) {
 }
 
 export function errorHandler(err, req, res, next) {
-    console.error(err); // TODO: Enhance to log this into a file
+    console.error(err.stack); // TODO: Enhance to log this into a file
     
     res.status(err.status || 500).json({
-        error: err.message || 'Internal Server Error'
+        errors: [{
+            message: err.message || 'Internal Server Error',
+        }]
     });
 }

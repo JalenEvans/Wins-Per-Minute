@@ -78,8 +78,7 @@ router.post('/login',
         return res.status(200).json({ user: {user_id: user.user_id, username: user.username}, token });
     }
     catch (error) {
-        console.error(error);
-        return res.status(500).json({ error: 'Login failed' });
+        next(error);
     }
 })
 
@@ -115,8 +114,7 @@ router.post('/forgot-password',
         }
     }
     catch (error) {
-        console.error(error);
-        return res.status(500).json({ error: 'Internal server error' });
+        next(error)
     }
 })
 
@@ -147,8 +145,7 @@ router.post('/reset-password',
         return res.status(200).json({ message: 'Password reset successfully' });
     }
     catch (error) {
-        console.error(error);
-        return res.status(500).json({ error: 'Internal server error' });
+        next(error);
     }
 })
 
