@@ -23,7 +23,7 @@ jobs:
       run: npm install -g newman
 
     - name: Install Express
-      run: npm install express
+      run: npm install -g express dotenv
 
     - name: Run Server
       run: node wins-per-minute-backend/server.js
