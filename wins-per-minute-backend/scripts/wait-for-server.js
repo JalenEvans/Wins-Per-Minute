@@ -2,7 +2,7 @@ import { check } from 'express-validator';
 import http from 'http';
 
 const url = "http://localhost:3000";
-const timeout = 10000; // 10 seconds
+const timeout = 20000; // 20 seconds
 const interval = 5000; // 5 seconds
 
 const startTime = Date.now();
