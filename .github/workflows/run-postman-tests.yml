@@ -23,7 +23,7 @@ jobs:
       run: npm install -g newman
 
     - name: Run Server
-      run: node server.js
+      run: node wins-per-minute-backend/server.js
 
     - name: Run Postman Collection
-      run: newman run postman/Authentication.postman_collection.json -e postman/Authentication.postman_fake_environment.json
+      run: newman run wins-per-minute-backend/postman/Authentication.postman_collection.json -e wins-per-minute-backend/postman/Authentication.postman_fake_environment.json
