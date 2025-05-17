@@ -3,6 +3,12 @@
 	"name": "Authentication",
 	"values": [
 		{
+			"key": "baseUrl",
+			"value": "http://localhost:3001",
+			"type": "default",
+			"enabled": true
+		},
+		{
 			"key": "password",
 			"value": "FakePassword123!",
 			"type": "default",
