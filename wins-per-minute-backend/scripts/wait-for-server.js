@@ -1,0 +1,31 @@
+import { check } from 'express-validator';
+import http from 'http';
+
+const url = "http://localhost:3000";
+const timeout = 10000; // 10 seconds
+const interval = 5000; // 5 seconds
+
+const startTime = Date.now();
+
+function checkServer() {
+    http.get(url, (res) => {
+        if (res.statusCode === 200) {
+            console.log('✅ Server is up and running!');
+            process.exit(0);
+        } else {
+            retry()
+        }
+    }).on('error', retry);
+}
+
+function retry() {
+    const elapsedTime = Date.now() - startTime;
+    if (elapsedTime > timeout) {
+        console.log('⏳ Server is not ready yet. Retrying...');
+        process.exit(1);
+    } else {
+        setTimeout(checkServer, interval);
+    }
+}
+
+checkServer();
