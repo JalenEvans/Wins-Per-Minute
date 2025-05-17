@@ -1,0 +1,39 @@
+{
+	"id": "fakeid-1234-5678-9101-112131415161",
+	"name": "Authentication",
+	"values": [
+		{
+			"key": "password",
+			"value": "FakePassword123!",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "email",
+			"value": "",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "user",
+			"value": "",
+			"type": "any",
+			"enabled": true
+		},
+		{
+			"key": "authToken",
+			"value": "",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "reset_token",
+			"value": "",
+			"type": "any",
+			"enabled": true
+		}
+	],
+	"_postman_variable_scope": "environment",
+	"_postman_exported_at": "2025-05-17T00:24:26.325Z",
+	"_postman_exported_using": "Postman/11.45.6"
+}

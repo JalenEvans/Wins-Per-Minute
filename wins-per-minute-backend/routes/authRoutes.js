@@ -3,6 +3,7 @@ import express from 'express';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 import crypto from 'crypto';
+import dotenv from 'dotenv';
 import { body } from 'express-validator';
 
 // Models
@@ -13,18 +14,19 @@ import { sendResetLink } from '../utils/sendEmail.js';
 import { SALT_ROUNDS } from '../utils/constants.js';
 
 // Middleware
-import { registerLimiter, loginLimiter, forgotPasswordLimiter } from '../middleware/rateLimiters.js';
 import { validateRequest } from '../middleware/errorHandler.js';
+import { authenticateToken } from '../middleware/authMiddleware.js';
 
 // Database
 import pool from '../db/db.js';
+
+dotenv.config();
 
 const router = express.Router();
 
 const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,20}$/;
 
-router.post('/register', 
-    registerLimiter,
+router.post('/register',
     [
         body('username').notEmpty().trim().isLength({ min: 3, max: 20 }).withMessage('Username must be between 3 and 20 characters long'),
         body('email').isEmail().withMessage('Invalid email format'),
@@ -53,8 +55,7 @@ router.post('/register',
     }
 })
 
-router.post('/login', 
-    loginLimiter,
+router.post('/login',
     [
         body('email').isEmail().withMessage('Invalid email format'),
         body('password').notEmpty().withMessage('Password is required'),
@@ -82,8 +83,7 @@ router.post('/login',
     }
 })
 
-router.post('/forgot-password', 
-    forgotPasswordLimiter,
+router.post('/forgot-password',
     [
         body('email').isEmail().withMessage('Invalid email format'),
     ], 
@@ -91,7 +91,7 @@ router.post('/forgot-password',
     const { email } = req.body;
 
     try {
-        const user = findUserByEmail(email);
+        const user = await findUserByEmail(email);
         if (!user) return res.status(404).json({ error: 'Email not found' });
 
         // Generate a password reset token
@@ -105,8 +105,14 @@ router.post('/forgot-password',
 
         const resetLink = `https://localhost:3001/reset-password?token=${token}`;
 
-        sendResetLink(email, resetLink);
-        return res.status(200).json({ message: 'If an account with this email exist, a reset link has been sent.' });
+        sendResetLink(email, resetLink); // TODO: catch errors from email sending
+
+        if (process.env.NODE_ENV === 'development') {
+            return res.status(200).json({ message: 'If an account with this email exist, a reset link has been sent.' , token: token })
+        }
+        else {
+            return res.status(200).json({ message: 'If an account with this email exist, a reset link has been sent.' })
+        }
     }
     catch (error) {
         console.error(error);
@@ -134,7 +140,7 @@ router.post('/reset-password',
         const hashedPassword = await bcrypt.hash(newPassword, SALT_ROUNDS);
 
         await pool.query(
-            'UPDATE users SET password_hash = $1, reset_token = NULL, reset_token_expiry = NULL WHERE id = $2',
+            'UPDATE users SET password_hash = $1, reset_token = NULL, reset_token_expiry = NULL WHERE user_id = $2',
             [hashedPassword, user.user_id]
         );
 
@@ -145,6 +151,14 @@ router.post('/reset-password',
         return res.status(500).json({ error: 'Internal server error' });
     }
 })
+
+// Protected route examples. This route requires a valid JWT token to access
+router.get('/protected',
+    authenticateToken,
+    (req, res) => {
+        return res.status(200).json({ message: 'Protected route accessed', user: req.user });
+    }
+)
 
 // TODO: implement logout
 

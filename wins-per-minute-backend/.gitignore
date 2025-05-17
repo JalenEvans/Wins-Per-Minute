@@ -3,6 +3,7 @@ npm-debug.log*
 
 # Sensitive Information
 .env
+postman/*.local.json
 
 # Editor directories and files
 .vscode/*

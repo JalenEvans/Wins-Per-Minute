@@ -9,7 +9,7 @@ const transporter = nodemailer.createTransport({
     auth: {
         type: 'OAuth2',
         user: process.env.EMAIL,
-        clientId: '73439477218-9e6v0eg0i2d3o0ak1m8i2er00gph0rqk.apps.googleusercontent.com',
+        clientId: '73439477218-86j4t4bn9qnfn595f3q6npedmcpfsbs7.apps.googleusercontent.com',
         clientSecret: process.env.CLIENT_SECRET,
         refreshToken: process.env.REFRESH_TOKEN,
         accessToken: process.env.ACCESS_TOKEN,
