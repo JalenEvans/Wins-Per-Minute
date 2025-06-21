@@ -9,8 +9,21 @@ const TypingGame = () => {
     const [elapsedTime, setElapsedTime] = useState(0);
 
     useEffect(() => {
-        const sampleWords = "This is a sample text for the typing game".split(" ");
-        setWords(sampleWords);
+        const wordCount = 10;
+        fetch(`https://random-word-api.vercel.app/api?words=${wordCount}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(json => {
+                setWords(json);
+            })
+            .catch(error => {
+                setWords(error.message.split(" "));
+                console.error('There was a problem with the fetch operation:', error);
+            })
     }, []);
 
     // Update the elapsed time
@@ -26,6 +39,7 @@ const TypingGame = () => {
         return () => clearInterval(interval);
     }, [startTime, isFinished]);
 
+    // Focus the input field on component mount
     const inputRef = useRef();
 
     useEffect(() => {
