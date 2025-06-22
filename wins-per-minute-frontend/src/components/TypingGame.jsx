@@ -8,6 +8,9 @@ const TypingGame = () => {
     const [isFinished, setIsFinished] = useState(false);
     const [elapsedTime, setElapsedTime] = useState(0);
 
+    const inputRef = useRef();
+    const totalMistakes = useRef(0);
+
     useEffect(() => {
         const wordCount = 10;
         fetch(`https://random-word-api.vercel.app/api?words=${wordCount}`)
@@ -40,8 +43,6 @@ const TypingGame = () => {
     }, [startTime, isFinished]);
 
     // Focus the input field on component mount
-    const inputRef = useRef();
-
     useEffect(() => {
         if (inputRef.current) {
             inputRef.current.focus();
@@ -56,6 +57,13 @@ const TypingGame = () => {
             setStartTime(Date.now());
         }
 
+        const newChar = value[value.length - 1];
+        const currIndex = value.length - 1;
+
+        if (target[currIndex] && newChar !== target[currIndex]) {
+            totalMistakes.current += 1;
+        }
+
         setUserInput(value);
 
         if (value.length >= target.length) {
@@ -68,10 +76,7 @@ const TypingGame = () => {
     const getResults = () => {
         const durationInMinutes = (endTime - startTime) / 60000;
         const totalChars = userInput.length;
-        const correctChars = userInput.split("").filter((char, index) => {
-            const target = words.join(" ");
-            return char === target[index];
-        }).length;
+        const correctChars = words.join(" ").length - totalMistakes.current;
 
         const wpm = Math.round((correctChars / 5) / durationInMinutes);
         const accuracy = Math.round((correctChars / totalChars) * 100);
