@@ -9,21 +9,22 @@ const TypingGame = () => {
     const [elapsedTime, setElapsedTime] = useState(0);
 
     useEffect(() => {
-        const wordCount = 10;
-        fetch(`https://random-word-api.vercel.app/api?words=${wordCount}`)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
-            })
-            .then(json => {
-                setWords(json);
-            })
-            .catch(error => {
-                setWords(error.message.split(" "));
-                console.error('There was a problem with the fetch operation:', error);
-            })
+        // const wordCount = 10;
+        // fetch(`https://random-word-api.vercel.app/api?words=${wordCount}`)
+        //     .then(response => {
+        //         if (!response.ok) {
+        //             throw new Error('Network response was not ok');
+        //         }
+        //         return response.json();
+        //     })
+        //     .then(json => {
+        //         setWords(json);
+        //     })
+        //     .catch(error => {
+        //         setWords(error.message.split(" "));
+        //         console.error('There was a problem with the fetch operation:', error);
+        //     })
+        setWords(("This is a sample text for the typing game.").split(" "));
     }, []);
 
     // Update the elapsed time
@@ -84,29 +85,36 @@ const TypingGame = () => {
         {!isFinished ? (
             <>
                 <div onClick={() => inputRef.current?.focus()} className="relative min-h-screen">
-                    <p className="mb-4 text-lg font-mono flex flex-wrap">
-                        {words.join(" ").split("").map((char, index) => {
-                            let className = "";
-                            
-                            if (index < userInput.length) {
-                                className =
-                                    userInput[index] === char
-                                        ? "text-green-600"
-                                        : "text-red-600";
-                            }
-                            else if (index === userInput.length) {
-                                className = "bg-blue-300 underline";
-                            }
-                            else {
-                                className = "text-gray-400";
-                            }
+                    <p className="mb-4 text-lg font-mono flex flex-wrap leading-relaxed gap-x-1">
+                        {words.map((word, wordIndex) => (
+                            <span key={wordIndex} className="flex">
+                                {word.split("").map((char, charIndex) => {
+                                    const charsBefore = words
+                                        .slice(0, wordIndex)
+                                        .reduce((accumulator, word) => accumulator + word.length + 1, 0);
+                                    const globalIndex = charsBefore + charIndex;
+                                    
+                                    let className = "";
+                                    if (globalIndex < userInput.length) {
+                                        className =
+                                            userInput[globalIndex] === char ? "text-green-600" : "text-red-600";
+                                    }
+                                    else if (globalIndex === userInput.length) {
+                                        className = "text-blue-600 underline";
+                                    }
+                                    else {
+                                        className = "text-gray-400";
+                                    }
 
-                            return (
-                                <span key={index} className={`${className}`}>
-                                    {char === " " ? "\u00A0" : char}
-                                </span>
-                            );
-                        })}
+                                    return (
+                                        <span key={charIndex} className={`inline-block ${className}`}>
+                                            {char}
+                                        </span>
+                                    )
+                                })}
+                                <span className="inline-block">&nbsp;</span>
+                            </span>
+                        ))}
                     </p>
                     <input
                         ref={inputRef}
