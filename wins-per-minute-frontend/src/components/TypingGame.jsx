@@ -4,6 +4,8 @@ const TypingGame = () => {
     const [words, setWords] = useState([]);
     const [userInput, setUserInput] = useState("");
     const [startTime, setStartTime] = useState(null);
+    const [liveWPM, setLiveWPM] = useState(0);
+    const [liveAccuracy, setLiveAccuracy] = useState(0);
     const [endTime, setEndTime] = useState(null);
     const [isFinished, setIsFinished] = useState(false);
     const [elapsedTime, setElapsedTime] = useState(0);
@@ -11,6 +13,7 @@ const TypingGame = () => {
     const inputRef = useRef();
     const totalMistakes = useRef(0);
 
+    // Fetch random words from the API
     useEffect(() => {
         const wordCount = 10;
         fetch(`https://random-word-api.vercel.app/api?words=${wordCount}`)
@@ -29,25 +32,37 @@ const TypingGame = () => {
             })
     }, []);
 
-    // Update the elapsed time
-    useEffect(() => {
-        let interval;
-
-        if (startTime && !isFinished) {
-            interval = setInterval(() => {
-                setElapsedTime((Date.now() - startTime) / 1000);
-            }, 100);
-        }
-
-        return () => clearInterval(interval);
-    }, [startTime, isFinished]);
-
     // Focus the input field on component mount
     useEffect(() => {
         if (inputRef.current) {
             inputRef.current.focus();
         }
     }, []);
+
+    // Update live WPM, accuracy, and elapsed time
+    useEffect(() => {
+        let interval;
+
+        if (startTime && !isFinished) {
+            interval = setInterval(() => {
+                setElapsedTime((Date.now() - startTime) / 1000);
+                
+                const durationInMinutes = (Date.now() - startTime) / 60000;
+
+                const totalChars = userInput.length;
+                const correctChars = totalChars - totalMistakes.current;
+
+                const wpm = Math.max(0, Math.round((correctChars / 5) / durationInMinutes));
+                const clamp = (num, min, max) => Math.min(Math.max(num, min), max);
+                const accuracy = totalChars > 0 ? clamp(Math.round((correctChars / totalChars) * 100), 0, 100) : 100;
+
+                setLiveWPM(wpm);
+                setLiveAccuracy(accuracy);
+            }, 100);
+        }
+
+        return () => clearInterval(interval);
+    }, [userInput, startTime, isFinished, words])
 
     const handleInputChange = (e) => {
         const value = e.target.value;
@@ -75,6 +90,7 @@ const TypingGame = () => {
     // Integrate testing into this
     const getResults = () => {
         const durationInMinutes = (endTime - startTime) / 60000;
+
         const totalChars = userInput.length;
         const correctChars = words.join(" ").length - totalMistakes.current;
 
@@ -129,16 +145,18 @@ const TypingGame = () => {
                         className="absolute opacity-0 pointer-events-none"
                         disabled={isFinished}
                     />
-                    <span className="text-sm text-gray-600">
-                        Time: {elapsedTime.toFixed(2)}s
-                    </span>
+                    <div className="mt-4 text-sm text-gray-600">
+                        <p>WPM: {liveWPM}</p>
+                        <p>Accuracy: {liveAccuracy}%</p>
+                        <p>Total Time: {elapsedTime.toFixed(2)}s</p>
+                    </div>
                 </div>
             </>
         ) : (
             <div className="mt-6">
                 <h2 className="text-xl font-semibold mb-2">Results</h2>
                 <p>WPM: {getResults().wpm}</p>
-                <p>Accuracy: {getResults().accuracy}</p>
+                <p>Accuracy: {getResults().accuracy}%</p>
                 <p>Total Time: {elapsedTime.toFixed(2)}s</p>
                 <button
                     onClick={() => {window.location.reload();}}
