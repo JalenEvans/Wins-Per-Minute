@@ -145,7 +145,7 @@ const TypingGame = () => {
                         className="absolute opacity-0 pointer-events-none"
                         disabled={isFinished}
                     />
-                    <div className="mt-4 text-sm text-gray-600">
+                    <div className="bg-gray-200 mt-4 text-sm text-gray-600">
                         <p>WPM: {liveWPM}</p>
                         <p>Accuracy: {liveAccuracy}%</p>
                         <p>Total Time: {elapsedTime.toFixed(2)}s</p>
@@ -155,8 +155,9 @@ const TypingGame = () => {
         ) : (
             <div className="mt-6">
                 <h2 className="text-xl font-semibold mb-2">Results</h2>
-                <p>WPM: {getResults().wpm}</p>
+                <p>Words Per Minute: {getResults().wpm}</p>
                 <p>Accuracy: {getResults().accuracy}%</p>
+                <p>Adjusted WPM: {Math.floor(getResults().wpm * (getResults().accuracy / 100))}</p>
                 <p>Total Time: {elapsedTime.toFixed(2)}s</p>
                 <button
                     onClick={() => {window.location.reload();}}
