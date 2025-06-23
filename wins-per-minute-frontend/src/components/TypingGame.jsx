@@ -25,6 +25,7 @@ const TypingGame = () => {
             })
             .then(json => {
                 setWords(json);
+                console.log("Word length:", json.join(" ").length);
             })
             .catch(error => {
                 setWords(error.message.split(" "));
@@ -159,6 +160,7 @@ const TypingGame = () => {
                 <p>Accuracy: {getResults().accuracy}%</p>
                 <p>Adjusted WPM: {Math.floor(getResults().wpm * (getResults().accuracy / 100))}</p>
                 <p>Total Time: {elapsedTime.toFixed(2)}s</p>
+                <p>Total Mistakes: {totalMistakes.current}</p>
                 <button
                     onClick={() => {window.location.reload();}}
                     className="mt-4 bg-blue-600 text-white px-4 py-2 rounded"
