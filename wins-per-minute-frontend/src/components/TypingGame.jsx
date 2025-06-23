@@ -4,11 +4,13 @@ const TypingGame = () => {
     const [words, setWords] = useState([]);
     const [userInput, setUserInput] = useState("");
     const [startTime, setStartTime] = useState(null);
+    const [endTime, setEndTime] = useState(null);
     const [liveWPM, setLiveWPM] = useState(0);
     const [liveAccuracy, setLiveAccuracy] = useState(0);
-    const [endTime, setEndTime] = useState(null);
     const [isFinished, setIsFinished] = useState(false);
     const [elapsedTime, setElapsedTime] = useState(0);
+    const [isPaused, setIsPaused] = useState(false);
+    const [countdown, setCountdown] = useState(null);
 
     const inputRef = useRef();
     const totalMistakes = useRef(0);
@@ -25,7 +27,6 @@ const TypingGame = () => {
             })
             .then(json => {
                 setWords(json);
-                console.log("Word length:", json.join(" ").length);
             })
             .catch(error => {
                 setWords(error.message.split(" "));
@@ -44,7 +45,7 @@ const TypingGame = () => {
     useEffect(() => {
         let interval;
 
-        if (startTime && !isFinished) {
+        if (startTime && !isFinished && !isPaused) {
             interval = setInterval(() => {
                 setElapsedTime((Date.now() - startTime) / 1000);
                 
@@ -63,9 +64,61 @@ const TypingGame = () => {
         }
 
         return () => clearInterval(interval);
-    }, [userInput, startTime, isFinished, words])
+    }, [userInput, startTime, isFinished, isPaused, words])
+
+    // Reset the game state when Ctrl + Enter is pressed
+    useEffect(() => {
+        const handleKeyDown = (e) => {
+            if (e.ctrlKey && e.key === 'Enter') {
+                e.preventDefault();
+                resetGame();
+            }
+        }
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [])
+
+    // Pause the game
+    useEffect(() => {
+        const handlePause = (e) => {
+            if (e.key === 'Escape') {
+                e.preventDefault();
+
+                if (isPaused) {
+                    setCountdown(3);
+                }
+                else {
+                    setIsPaused(true);
+                }
+                console.log(`Game is now ${!isPaused ? 'paused' : 'resumed'}.`);
+            }
+        }
+
+        if (!isPaused && inputRef.current) {
+            inputRef.current.focus();
+        }
+
+        window.addEventListener('keydown', handlePause);
+        return () => window.removeEventListener('keydown', handlePause);
+    }, [isPaused])
+
+    // Countdown before resuming the game
+    useEffect(() => {
+        if (countdown === null) return;
+
+        if (countdown > 0) {
+            const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+            return () => clearTimeout(timer);
+        }
+
+        setCountdown(null);
+        setIsPaused(false);
+    }, [countdown])
 
     const handleInputChange = (e) => {
+        if (isPaused) return;
+
         const value = e.target.value;
         const target = words.join(" ");
 
@@ -101,10 +154,56 @@ const TypingGame = () => {
         return { wpm, accuracy };
     };
 
+    // Reset the game state
+    const resetGame = () => {
+        setUserInput("");
+        setStartTime(null);
+        setEndTime(null);
+        setLiveWPM(0);
+        setLiveAccuracy(0);
+        setIsFinished(false);
+        setElapsedTime(0);
+        setIsPaused(false);
+        setCountdown(null);
+        totalMistakes.current = 0;
+
+        // Refocus the input field
+        if (inputRef.current) {
+            inputRef.current.focus();
+        }
+
+        // Refetch words
+        const wordCount = 10;
+        fetch(`https://random-word-api.vercel.app/api?words=${wordCount}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(json => {
+                setWords(json);
+            })
+            .catch(error => {
+                setWords(error.message.split(" "));
+                console.error('There was a problem with the fetch operation:', error);
+            })
+    }
+
     return (
         <div className="p-6 max-w-xl mx-auto">
         {!isFinished ? (
             <>
+                {isPaused && countdown === null && (
+                    <div className="absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center z-10 transition-opacity duration-300">
+                        <div className="text-white text-2xl font-bold animate-pulse">Paused</div>
+                    </div>
+                )}
+                {countdown !== null && (
+                    <div className="absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center z-10 transition-opacity duration-300">
+                        <div className="text-white text-2xl font-bold animate-pulse">{countdown}</div>
+                    </div>
+                )}
                 <div onClick={() => inputRef.current?.focus()} className="relative min-h-screen">
                     <p className="mb-4 text-lg font-mono flex flex-wrap leading-relaxed gap-x-1">
                         {words.map((word, wordIndex) => (
@@ -144,13 +243,14 @@ const TypingGame = () => {
                         onChange={handleInputChange}
                         autoFocus
                         className="absolute opacity-0 pointer-events-none"
-                        disabled={isFinished}
+                        disabled={isFinished || isPaused}
                     />
                     <div className="bg-gray-200 mt-4 text-sm text-gray-600">
                         <p>WPM: {liveWPM}</p>
                         <p>Accuracy: {liveAccuracy}%</p>
                         <p>Total Time: {elapsedTime.toFixed(2)}s</p>
                     </div>
+                    <span className="absolute opacity-50 bottom-0 right-0 pointer-events-none">Ctrl + Enter to Restart</span>
                 </div>
             </>
         ) : (
