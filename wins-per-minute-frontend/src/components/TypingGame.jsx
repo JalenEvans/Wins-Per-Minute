@@ -241,6 +241,9 @@ const TypingGame = () => {
                             type="text"
                             value={userInput}
                             onChange={handleInputChange}
+                            onCopy={(e) => e.preventDefault()}
+                            onCut={(e) => e.preventDefault()}
+                            onPaste={(e) => e.preventDefault()}
                             autoFocus
                             className="absolute opacity-0 pointer-events-none"
                             disabled={isFinished || isPaused}
