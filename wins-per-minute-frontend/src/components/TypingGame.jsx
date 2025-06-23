@@ -191,66 +191,70 @@ const TypingGame = () => {
     }
 
     return (
-        <div className="p-6 max-w-xl mx-auto">
+        <div className="p-6 max-w-6xl mx-auto">
         {!isFinished ? (
             <>
-                {isPaused && countdown === null && (
-                    <div className="absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center z-10 transition-opacity duration-300">
-                        <div className="text-white text-2xl font-bold animate-pulse">Paused</div>
+                <div className="relative">
+                    {isPaused && countdown === null && (
+                        <div className="absolute inset-0 bg-black bg-opacity-60 backdrop-blur-md flex items-center justify-center z-10 transition-opacity duration-300">
+                            <div className="text-white text-2xl font-bold animate-pulse">Paused</div>
+                        </div>
+                    )}
+                    {countdown !== null && (
+                        <div className="absolute inset-0 bg-black bg-opacity-60 backdrop-blur-md flex items-center justify-center z-10 transition-opacity duration-300">
+                            <div className="text-white text-2xl font-bold animate-pulse">{countdown}</div>
+                        </div>
+                    )}
+                    <div onClick={() => inputRef.current?.focus()} className="relative size-fit">
+                        <p className="mb-4 text-3xl font-mono flex flex-wrap leading-relaxed gap-x-1">
+                            {words.map((word, wordIndex) => (
+                                <span key={wordIndex} className="flex">
+                                    {word.split("").map((char, charIndex) => {
+                                        const charsBefore = words
+                                            .slice(0, wordIndex)
+                                            .reduce((accumulator, word) => accumulator + word.length + 1, 0);
+                                        const globalIndex = charsBefore + charIndex;
+                    
+                                        let className = "";
+                                        if (globalIndex < userInput.length) {
+                                            className =
+                                                userInput[globalIndex] === char ? "text-green-600" : "text-red-600";
+                                        }
+                                        else if (globalIndex === userInput.length) {
+                                            className = "text-blue-600 underline";
+                                        }
+                                        else {
+                                            className = "text-gray-400";
+                                        }
+                                        return (
+                                            <span key={charIndex} className={`inline-block ${className}`}>
+                                                {char}
+                                            </span>
+                                        )
+                                    })}
+                                    <span className="inline-block">&nbsp;</span>
+                                </span>
+                            ))}
+                        </p>
+                        <input
+                            ref={inputRef}
+                            type="text"
+                            value={userInput}
+                            onChange={handleInputChange}
+                            autoFocus
+                            className="absolute opacity-0 pointer-events-none"
+                            disabled={isFinished || isPaused}
+                        />
                     </div>
-                )}
-                {countdown !== null && (
-                    <div className="absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center z-10 transition-opacity duration-300">
-                        <div className="text-white text-2xl font-bold animate-pulse">{countdown}</div>
-                    </div>
-                )}
-                <div onClick={() => inputRef.current?.focus()} className="relative min-h-screen">
-                    <p className="mb-4 text-lg font-mono flex flex-wrap leading-relaxed gap-x-1">
-                        {words.map((word, wordIndex) => (
-                            <span key={wordIndex} className="flex">
-                                {word.split("").map((char, charIndex) => {
-                                    const charsBefore = words
-                                        .slice(0, wordIndex)
-                                        .reduce((accumulator, word) => accumulator + word.length + 1, 0);
-                                    const globalIndex = charsBefore + charIndex;
-                                    
-                                    let className = "";
-                                    if (globalIndex < userInput.length) {
-                                        className =
-                                            userInput[globalIndex] === char ? "text-green-600" : "text-red-600";
-                                    }
-                                    else if (globalIndex === userInput.length) {
-                                        className = "text-blue-600 underline";
-                                    }
-                                    else {
-                                        className = "text-gray-400";
-                                    }
-
-                                    return (
-                                        <span key={charIndex} className={`inline-block ${className}`}>
-                                            {char}
-                                        </span>
-                                    )
-                                })}
-                                <span className="inline-block">&nbsp;</span>
-                            </span>
-                        ))}
-                    </p>
-                    <input
-                        ref={inputRef}
-                        type="text"
-                        value={userInput}
-                        onChange={handleInputChange}
-                        autoFocus
-                        className="absolute opacity-0 pointer-events-none"
-                        disabled={isFinished || isPaused}
-                    />
-                    <div className="bg-gray-200 mt-4 text-sm text-gray-600">
-                        <p>WPM: {liveWPM}</p>
-                        <p>Accuracy: {liveAccuracy}%</p>
-                        <p>Total Time: {elapsedTime.toFixed(2)}s</p>
-                    </div>
-                    <span className="absolute opacity-50 bottom-0 right-0 pointer-events-none">Ctrl + Enter to Restart</span>
+                </div>
+                <div className="bg-gray-200 mt-4 text-sm text-gray-600">
+                    <p>WPM: {liveWPM}</p>
+                    <p>Accuracy: {liveAccuracy}%</p>
+                    <p>Total Time: {elapsedTime.toFixed(2)}s</p>
+                </div>
+                <div className="relative bottom-0 right-0 p-1 text-sm text-gray-500 flex flex-col">
+                    <span className="font-semibold">Press Escape to Pause,</span>
+                    <span className="font-semibold">Ctrl + Enter to Restart</span>
                 </div>
             </>
         ) : (
