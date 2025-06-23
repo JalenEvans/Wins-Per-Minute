@@ -156,6 +156,10 @@ const TypingGame = () => {
 
     // Reset the game state
     const resetGame = () => {
+        setCountdown(3);
+        const confirmReset = window.confirm("Are you sure you want to reset the game? Your current progress will be lost.");
+        if (!confirmReset) return;
+
         setUserInput("");
         setStartTime(null);
         setEndTime(null);
@@ -196,13 +200,13 @@ const TypingGame = () => {
             <>
                 <div className="relative">
                     {isPaused && countdown === null && (
-                        <div className="absolute inset-0 bg-black bg-opacity-60 backdrop-blur-md flex items-center justify-center z-10 transition-opacity duration-300">
-                            <div className="text-white text-2xl font-bold animate-pulse">Paused</div>
+                        <div className="absolute inset-0 bg-opacity-60 backdrop-blur-md flex items-center justify-center z-10 transition-opacity duration-300">
+                            <div className="text-gray-600 text-2xl font-bold">Paused</div>
                         </div>
                     )}
                     {countdown !== null && (
-                        <div className="absolute inset-0 bg-black bg-opacity-60 backdrop-blur-md flex items-center justify-center z-10 transition-opacity duration-300">
-                            <div className="text-white text-2xl font-bold animate-pulse">{countdown}</div>
+                        <div className="absolute inset-0 bg-opacity-60 backdrop-blur-md flex items-center justify-center z-10 transition-opacity duration-300">
+                            <div className="text-gray-600 text-2xl font-bold">{countdown}</div>
                         </div>
                     )}
                     <div onClick={() => inputRef.current?.focus()} className="relative size-fit">
