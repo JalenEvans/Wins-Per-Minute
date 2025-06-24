@@ -34,10 +34,16 @@ const useTypingGame = () => {
 
     // Update live WPM, accuracy, and elapsed time
     useEffect(() => {
-        const { wpm, accuracy, time } = updateLiveStats(startTime, userInput, totalMistakes, isFinished, isPaused);
-        setLiveWPM(wpm);
-        setLiveAccuracy(accuracy);
-        setElapsedTime(time);
+        if (!startTime || isFinished || isPaused) return;
+
+        const interval = setInterval(() => {
+            const { wpm, accuracy, time } = updateLiveStats(startTime, userInput, totalMistakes.current, isFinished, isPaused);
+            setLiveWPM(wpm);
+            setLiveAccuracy(accuracy);
+            setElapsedTime(time);
+        }, 100);
+
+        return () => clearInterval(interval);
     }, [userInput, startTime, isFinished, isPaused, words])
 
     // Reset the game state when Ctrl + Enter is pressed
@@ -149,7 +155,7 @@ const useTypingGame = () => {
 
     // Get final results
     const getResults = () => {
-        const { wpm, accuracy, time } = getStats(endTime, totalMistakes.current, words.join(" ").length);
+        const { wpm, accuracy, time } = getStats(startTime, endTime, totalMistakes.current, words.join(" ").length);
         return ({ wpm, accuracy, time });
     }
     return {
