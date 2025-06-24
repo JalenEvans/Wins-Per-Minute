@@ -11,7 +11,7 @@ import { createUser, findUserByEmail } from '../models/userModel.js';
 
 // Utils
 import { sendResetLink } from '../utils/sendEmail.js';
-import { SALT_ROUNDS } from '../utils/constants.js';
+import { SALT_ROUNDS } from '../constants.js';
 
 // Middleware
 import { validateRequest } from '../middleware/errorHandler.js';

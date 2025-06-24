@@ -1,6 +1,6 @@
 import pool from "../db/db.js";
 import bcrypt from "bcrypt";
-import { SALT_ROUNDS } from "../utils/constants.js";
+import { SALT_ROUNDS } from "../constants.js";
 
 export async function createUser (username, email, password) {
     const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS)
