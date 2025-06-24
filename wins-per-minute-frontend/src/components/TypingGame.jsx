@@ -276,7 +276,7 @@ const TypingGame = () => {
                 </div>
             </>
         ) : (
-            <div className="mt-6">
+            <div className="bg-gray-200 p-4 mt-6">
                 <h2 className="text-xl font-semibold mb-2">Results</h2>
                 <p>Words Per Minute: {getResults().wpm}</p>
                 <p>Accuracy: {getResults().accuracy}%</p>
