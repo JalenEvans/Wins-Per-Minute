@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { WORD_COUNT } from '../constants.js';
+import { fetchWords, getStats, updateLiveStats } from '../utils/typing';
 
 const useTypingGame = () => {
     const [words, setWords] = useState([]);
@@ -18,20 +18,11 @@ const useTypingGame = () => {
 
     // Fetch random words from the API
     useEffect(() => {
-        fetch(`https://random-word-api.vercel.app/api?words=${WORD_COUNT}`)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
-            })
-            .then(json => {
-                setWords(json);
-            })
-            .catch(error => {
-                setWords(error.message.split(" "));
-                console.error('There was a problem with the fetch operation:', error);
-            })
+        const getWords = async () => {
+            const words = await fetchWords();
+            setWords(words);
+        };
+        getWords();
     }, []);
 
     // Focus the input field on component mount
@@ -43,27 +34,10 @@ const useTypingGame = () => {
 
     // Update live WPM, accuracy, and elapsed time
     useEffect(() => {
-        let interval;
-
-        if (startTime && !isFinished && !isPaused) {
-            interval = setInterval(() => {
-                setElapsedTime((Date.now() - startTime) / 1000);
-
-                const durationInMinutes = (Date.now() - startTime) / 60000;
-
-                const totalChars = userInput.length;
-                const correctChars = totalChars - totalMistakes.current;
-
-                const wpm = Math.max(0, Math.round((correctChars / 5) / durationInMinutes));
-                const clamp = (num, min, max) => Math.min(Math.max(num, min), max);
-                const accuracy = totalChars > 0 ? clamp(Math.round((correctChars / totalChars) * 100), 0, 100) : 100;
-
-                setLiveWPM(wpm);
-                setLiveAccuracy(accuracy);
-            }, 100);
-        }
-
-        return () => clearInterval(interval);
+        const { wpm, accuracy, time } = updateLiveStats(startTime, userInput, totalMistakes, isFinished, isPaused);
+        setLiveWPM(wpm);
+        setLiveAccuracy(accuracy);
+        setElapsedTime(time);
     }, [userInput, startTime, isFinished, isPaused, words])
 
     // Reset the game state when Ctrl + Enter is pressed
@@ -86,7 +60,7 @@ const useTypingGame = () => {
                 e.preventDefault();
 
                 if (isPaused) {
-                    setCountdown(3);
+                    setCountdown(3); // Countdown of 3 seconds
                 }
                 else {
                     setIsPaused(true);
@@ -116,6 +90,7 @@ const useTypingGame = () => {
         setIsPaused(false);
     }, [countdown])
 
+    // Handle user input changes
     const handleInputChange = (e) => {
         if (isPaused) return;
 
@@ -141,18 +116,6 @@ const useTypingGame = () => {
         }
     };
 
-    // Integrate testing into this
-    const getResults = () => {
-        const durationInMinutes = (endTime - startTime) / 60000;
-
-        const totalChars = userInput.length;
-        const correctChars = words.join(" ").length - totalMistakes.current;
-
-        const wpm = Math.round((correctChars / 5) / durationInMinutes);
-        const accuracy = Math.round((correctChars / totalChars) * 100);
-
-        return { wpm, accuracy };
-    };
 
     // Reset the game state
     const resetGame = () => {
@@ -177,22 +140,18 @@ const useTypingGame = () => {
         }
 
         // Refetch words
-        fetch(`https://random-word-api.vercel.app/api?words=${WORD_COUNT}`)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
-            })
-            .then(json => {
-                setWords(json);
-            })
-            .catch(error => {
-                setWords(error.message.split(" "));
-                console.error('There was a problem with the fetch operation:', error);
-            })
+        const getWords = async () => {
+            const words = await fetchWords();
+            setWords(words);
+        };
+        getWords();
     }
 
+    // Get final results
+    const getResults = () => {
+        const { wpm, accuracy, time } = getStats(endTime, totalMistakes.current, words.join(" ").length);
+        return ({ wpm, accuracy, time });
+    }
     return {
         words,
         userInput,
