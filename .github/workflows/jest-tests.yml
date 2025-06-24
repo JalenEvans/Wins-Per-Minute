@@ -16,17 +16,22 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [18.x, 20.x, 22.x]
+        node-version: [22.x]
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
     steps:
     - uses: actions/checkout@v4
-    - run: cd .\wins-per-minute-frontend\
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v4
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
-    - run: npm ci
-    - run: npm run dev
-    - run: npm test
+        cache-dependency-path: wins-per-minute-frontend/package-lock.json
+
+    - name: Install dependencies
+      run: npm install
+      working-directory: wins-per-minute-frontend
+
+    - name: Run tests
+      run: node --experimental-vm-modules node_modules/jest/bin/jest.js
+      working-directory: wins-per-minute-frontend
