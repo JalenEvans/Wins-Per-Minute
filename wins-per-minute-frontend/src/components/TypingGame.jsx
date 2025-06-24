@@ -200,12 +200,22 @@ const TypingGame = () => {
             <>
                 <div className="relative">
                     {isPaused && countdown === null && (
-                        <div className="absolute inset-0 bg-opacity-60 backdrop-blur-md flex items-center justify-center z-10 transition-opacity duration-300">
+                        <div 
+                            className="absolute inset-0 bg-opacity-60 backdrop-blur-md flex items-center justify-center z-10 transition-opacity duration-300"
+                            role='dialog'
+                            aria-modal="true"
+                            aria-label="Game paused"
+                        >
                             <div className="text-gray-600 text-2xl font-bold">Paused</div>
                         </div>
                     )}
                     {countdown !== null && (
-                        <div className="absolute inset-0 bg-opacity-60 backdrop-blur-md flex items-center justify-center z-10 transition-opacity duration-300">
+                        <div 
+                            className="absolute inset-0 bg-opacity-60 backdrop-blur-md flex items-center justify-center z-10 transition-opacity duration-300"
+                            role='dialog'
+                            aria-modal="true"
+                            aria-label="Countdown till game resumes"
+                        >
                             <div className="text-gray-600 text-2xl font-bold">{countdown}</div>
                         </div>
                     )}
@@ -251,10 +261,11 @@ const TypingGame = () => {
                             autoFocus
                             className="absolute opacity-0 pointer-events-none"
                             disabled={isFinished || isPaused}
+                            aria-label="Typing input field"
                         />
                     </div>
                 </div>
-                <div className="bg-gray-200 mt-4 text-sm text-gray-600">
+                <div role="status" aria-live="polite" className="bg-gray-200 mt-4 text-sm text-gray-600">
                     <p>WPM: {liveWPM}</p>
                     <p>Accuracy: {liveAccuracy}%</p>
                     <p>Total Time: {elapsedTime.toFixed(2)}s</p>
