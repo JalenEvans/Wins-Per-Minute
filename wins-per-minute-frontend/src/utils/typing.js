@@ -1,5 +1,3 @@
-// TODO: Make this file testable with Jest
-
 import { WORD_COUNT } from '../constants.js';
 
 export const fetchWords = async () => {
