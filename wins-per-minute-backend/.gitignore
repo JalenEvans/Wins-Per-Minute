@@ -2,7 +2,7 @@ node_modules
 npm-debug.log*
 
 # Sensitive Information
-.env
+*.env
 postman/*.local.json
 
 # Editor directories and files

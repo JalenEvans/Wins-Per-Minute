@@ -16,7 +16,7 @@ import pool from '../db/db.js';
 
 dotenv.config;
 
-export const register = async (req, res) => {
+export const register = async (req, res, next) => {
     const { username, email, password } = req.body;
 
     try {
@@ -37,7 +37,7 @@ export const register = async (req, res) => {
     }
 }
 
-export const login = async (req, res) => {
+export const login = async (req, res, next) => {
     const { email, password } = req.body;
 
     try {
@@ -55,12 +55,11 @@ export const login = async (req, res) => {
         return res.status(200).json({ user: { user_id: user.user_id, username: user.username }, token });
     }
     catch (error) {
-        console.error(error);
-        return res.status(500).json({ error: 'Login failed' });
+        next(error)
     }
 }
 
-export const forgotPassword = async (req, res) => {
+export const forgotPassword = async (req, res, next) => {
     const { email } = req.body;
 
     try {
@@ -88,12 +87,11 @@ export const forgotPassword = async (req, res) => {
         }
     }
     catch (error) {
-        console.error(error);
-        return res.status(500).json({ error: 'Internal server error' });
+        next(error)
     }
 }
 
-export const resetPassword = async (req, res) => {
+export const resetPassword = async (req, res, next) => {
     const { token, newPassword } = req.body;
 
     try {
@@ -115,7 +113,6 @@ export const resetPassword = async (req, res) => {
         return res.status(200).json({ message: 'Password reset successfully' });
     }
     catch (error) {
-        console.error(error);
-        return res.status(500).json({ error: 'Internal server error' });
+        next(error)
     }
 }

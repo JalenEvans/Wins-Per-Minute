@@ -7,9 +7,7 @@ import { validateRequest } from '../middleware/errorHandler.js';
 import { authenticateToken } from '../middleware/authMiddleware.js';
 
 // Controller
-import { forgotPassword, login, register, resetPassword } from '../controllers/authController';
-
-dotenv.config();
+import { forgotPassword, login, register, resetPassword } from '../controllers/authController.js';
 
 const router = express.Router();
 

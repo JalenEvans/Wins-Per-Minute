@@ -4,7 +4,7 @@
   "main": "server.js",
   "type": "module",
   "scripts": {
-    "test": "jest"
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js"
   },
   "keywords": [],
   "author": "",
@@ -23,6 +23,7 @@
     "socket.io": "^4.8.1"
   },
   "devDependencies": {
-    "jest": "^30.0.3"
+    "jest": "^30.0.3",
+    "supertest": "^7.1.1"
   }
 }

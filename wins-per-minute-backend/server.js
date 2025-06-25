@@ -22,8 +22,12 @@ app.get('/', (req, res) => res.send('API is running'));
 // Middleware
 app.use(errorHandler);
 
-app.listen(process.env.PORT, () => {
-    console.log(`Server is running on http://localhost:${process.env.PORT}`);
-});
+if (process.env.NODE_ENV !== 'test') {
+    app.listen(process.env.PORT, () => {
+        console.log(`Server is running on http://localhost:${process.env.PORT}`);
+        console.log(`Server is using environment: ${process.env.NODE_ENV}`);
+        console.log(`Database URL is: ${process.env.DATABASE_URL}`)
+    });
+}
 
 export default app;
