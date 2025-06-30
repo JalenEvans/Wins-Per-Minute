@@ -14,7 +14,7 @@ import { SALT_ROUNDS } from '../constants.js';
 // Database
 import pool from '../db/db.js';
 
-dotenv.config;
+dotenv.config();
 
 export const register = async (req, res, next) => {
     const { username, email, password } = req.body;
@@ -46,7 +46,7 @@ export const login = async (req, res, next) => {
         if (!user) return res.status(401).json({ error: 'Invalid credentials' });
 
         // Check if the password is correct
-        const isPasswordValid = await bcrypt.compare(password, user.password_hash);
+        const isPasswordValid = await bcrypt.compare(password, user.password_hash.trim());
         if (!isPasswordValid) return res.status(401).json({ error: 'Invalid credentials' });
 
         // Generate a JWT token

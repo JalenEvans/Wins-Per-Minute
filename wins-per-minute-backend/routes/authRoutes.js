@@ -16,8 +16,8 @@ const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,20}$/;
 router.post('/register',
     [
         body('username').notEmpty().trim().isLength({ min: 3, max: 20 }).withMessage('Username must be between 3 and 20 characters long'),
-        body('email').isEmail().withMessage('Invalid email format'),
-        body('password').matches(PASSWORD_REGEX).withMessage(
+        body('email').trim().isEmail().withMessage('Invalid email format'),
+        body('password').trim().matches(PASSWORD_REGEX).withMessage(
             'Password must be between 8 and 20 characters long, contain at least one uppercase letter, one lowercase letter, one digit 0-9, and one special character.'),
     ],
     validateRequest,
@@ -26,22 +26,22 @@ router.post('/register',
 
 router.post('/login',
     [
-        body('email').isEmail().withMessage('Invalid email format'),
-        body('password').notEmpty().withMessage('Password is required'),
+        body('email').trim().isEmail().withMessage('Invalid email format'),
+        body('password').notEmpty().trim().withMessage('Password is required'),
     ], 
     login
 )
 
 router.post('/forgot-password',
     [
-        body('email').isEmail().withMessage('Invalid email format'),
+        body('email').trim().isEmail().withMessage('Invalid email format'),
     ], 
     forgotPassword
 )
 
 router.post('/reset-password',
     [
-        body('newPassword').matches(PASSWORD_REGEX).withMessage(
+        body('newPassword').trim().matches(PASSWORD_REGEX).withMessage(
             'Password must be between 8 and 20 characters long, contain at least one uppercase letter, one lowercase letter, one digit 0-9, and one special character.'),
     ],
     resetPassword 
